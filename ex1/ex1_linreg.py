@@ -1,8 +1,22 @@
 # -*- coding: utf-8 -*-
 """
+Python script implementing the first linear regression exercise
+
 Created on Mon Oct 26 11:50:01 2015
 
 @author: anaiman
+
+From the original exercise:
+
+This exercise uses a data from the UCI repository:
+ Bache, K. & Lichman, M. (2013). UCI Machine Learning Repository
+ http://archive.ics.uci.edu/ml
+ Irvine, CA: University of California, School of Information and Computer Science.
+
+Data created by:
+ Harrison, D. and Rubinfeld, D.L.
+ ''Hedonic prices and the demand for clean air''
+ J. Environ. Economics & Management, vol.5, 81-102, 1978.
 """
 
 import numpy as np
@@ -37,56 +51,60 @@ def linear_regression(theta, X, y):
     
     return f, g
 
+def main():
+    
+    # Prepare data
+    
+    # Load housing data from file
+    data = np.loadtxt('housing.data')
+    # Shuffle examples into random order
+    np.random.shuffle(data)
+    # Put examples into columns
+    data = np.transpose(data)
+    # Add a row of ones to allow an intercept feature
+    data = np.vstack((np.ones((1, data.shape[1])), data))
+    
+    # Split data into training and test sets
+    # Last row is the median home price
+    n_train = 400
+    train_x = data[0:-1, 0:n_train]
+    train_y = data[-1, 0:n_train]
+    [n, m] = np.shape(train_x)
+    
+    test_x = data[0:-1, n_train+1:-1]
+    test_y = data[-1, n_train+1:-1]
+    
+    # Initialize the coefficient vector to random values
+    theta0 = np.random.rand(n,1)
+    
+    # Minimize the linear regression objective function
+    result = opt.minimize(linear_regression, theta0, args=(train_x, train_y), 
+                          jac=True, options={'maxiter': 200, 'disp': True})
+    theta = result.x
+    
+    # How'd we do?
+    train_predicted = np.transpose(theta).dot(train_x)
+    s = train_predicted - train_y
+    train_rms = np.sqrt(np.mean(s*s))
+    print "RMS Training Error: " + str(train_rms)
+    
+    test_predicted = np.transpose(theta).dot(test_x)
+    s = test_predicted - test_y
+    test_rms = np.sqrt(np.mean(s*s))
+    print "RMS Testing Error: " + str(test_rms)
+    
+    #sorted_indices = np.argsort(train_y)
+    #plt.plot(train_predicted[sorted_indices], 'bx')
+    #plt.plot(train_y[sorted_indices], 'rx')
+    #plt.show()
+    
+    sorted_indices = np.argsort(test_y)
+    plt.plot(test_predicted[sorted_indices], 'bx', label='Predicted Price')
+    plt.plot(test_y[sorted_indices], 'rx', label='Actual Price')
+    plt.legend(loc='upper left')
+    plt.xlabel('House #')
+    plt.ylabel('House price ($1000s)')
+    plt.show()
 
-# Prepare data
-
-# Load housing data from file
-data = np.loadtxt('housing.data')
-# Shuffle examples into random order
-np.random.shuffle(data)
-# Put examples into columns
-data = np.transpose(data)
-# Add a row of ones to allow an intercept feature
-data = np.vstack((np.ones((1, data.shape[1])), data))
-
-# Split data into training and test sets
-# Last row is the median home price
-n_train = 400
-train_x = data[0:-1, 0:n_train]
-train_y = data[-1, 0:n_train]
-[n, m] = np.shape(train_x)
-
-test_x = data[0:-1, n_train+1:-1]
-test_y = data[-1, n_train+1:-1]
-
-# Initialize the coefficient vector to random values
-theta0 = np.random.rand(n,1)
-
-# Minimize the linear regression objective function
-result = opt.minimize(linear_regression, theta0, args=(train_x, train_y), 
-                      jac=True, options={'maxiter': 200, 'disp': True})
-theta = result.x
-
-# How'd we do?
-train_predicted = np.transpose(theta).dot(train_x)
-s = train_predicted - train_y
-train_rms = np.sqrt(np.mean(s*s))
-print "RMS Training Error: " + str(train_rms)
-
-test_predicted = np.transpose(theta).dot(test_x)
-s = test_predicted - test_y
-test_rms = np.sqrt(np.mean(s*s))
-print "RMS Testing Error: " + str(test_rms)
-
-#sorted_indices = np.argsort(train_y)
-#plt.plot(train_predicted[sorted_indices], 'bx')
-#plt.plot(train_y[sorted_indices], 'rx')
-#plt.show()
-
-sorted_indices = np.argsort(test_y)
-plt.plot(test_predicted[sorted_indices], 'bx', label='Predicted Price')
-plt.plot(test_y[sorted_indices], 'rx', label='Actual Price')
-plt.legend(loc='upper left')
-plt.xlabel('House #')
-plt.ylabel('House price ($1000s)')
-plt.show()
+if __name__ == '__main__':
+    main()
