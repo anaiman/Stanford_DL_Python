@@ -17,12 +17,13 @@ def loadMNISTImages(filename):
         # Header
         dt = np.dtype('>i4')
         magic = np.fromfile(f, dtype=dt, count=1)
+        assert magic == 2051, "Bad magic number in " + filename
         numImages = np.fromfile(f, dtype=dt, count=1)
         numRows = np.fromfile(f, dtype=dt, count=1)
         numCols = np.fromfile(f, dtype=dt, count=1)
         
         # Data
-        dt = np.dtype('B1')
+        dt = np.dtype('u1')
         images = np.fromfile(f, dtype=dt, count=-1)
         #first = images[0:28*28].reshape(28,28)
         
@@ -44,10 +45,11 @@ def loadMNISTLabels(filename):
         # Header
         dt = np.dtype('>i4')
         magic = np.fromfile(f, dtype=dt, count=1)
+        assert magic == 2049, "Bad magic number in " + filename
         numLabels = np.fromfile(f, dtype=dt, count=1)
         
         # Data
-        dt = np.dtype('B1')
+        dt = np.dtype('u1')
         labels = np.fromfile(f, dtype=dt, count=-1)
     
     #print str(labels[0])
@@ -92,10 +94,10 @@ def main():
     X = X[:, indices]
     
     # Normalize data per pixel - get mean ~0 and std ~1
-    s = np.std(X, axis=1)
-    m = np.mean(X, axis=1)
-    X = (X.T-m).T
-    X = (X.T/(s+0.1)).T
+#    s = np.std(X, axis=1)
+#    m = np.mean(X, axis=1)
+#    X = (X.T-m).T
+#    X = (X.T/(s+0.1)).T
     
     train_X = X
     train_y = y
@@ -116,8 +118,8 @@ def main():
     X = X[:, indices]
     
     # Normalize data using same mean and scale as training data
-    X = (X.T-m).T
-    X = (X.T/(s+0.1)).T
+#    X = (X.T-m).T
+#    X = (X.T/(s+0.1)).T
     
     test_X = X
     test_y = y
@@ -129,7 +131,7 @@ def main():
     [n, m] = np.shape(train_X)
     
     # Initialize the coefficient vector to random values
-    theta0 = np.random.rand(n,1)*0.001
+    theta0 = np.random.rand(n,1)*0.01
     
     # Minimize the linear regression objective function
     result = opt.minimize(logistic_regression, theta0, args=(train_X, train_y), 
